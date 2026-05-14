@@ -1,8 +1,8 @@
-# Create:LLM Era
+# LLMEra
 
 [中文说明](README.zh_cn.md)
 
-Create:LLM Era is a Create addon for Minecraft 1.21.1 on NeoForge. It adds intelligent network blocks that make it possible to connect large language models to Create-style automation.
+LLMEra is a Create addon for Minecraft 1.21.1 on NeoForge. It adds intelligent network blocks that make it possible to connect large language models to Create-style automation.
 
 ## Features
 
@@ -28,6 +28,6 @@ The built jar is generated under `build/libs/`.
 
 ## Version
 
-- Mod name: Create:LLM Era
+- Mod name: LLMEra
 - Version: 1.0
 - License: GNU GPLv3

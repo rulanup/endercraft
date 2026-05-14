@@ -1,8 +1,8 @@
-# Create:LLM Era
+# LLMEra
 
 [English README](README.md)
 
-Create:LLM Era 是一个面向 Minecraft 1.21.1 / NeoForge 的机械动力（Create）附属模组。它添加智能网络方块，让大语言模型可以接入 Minecraft 自动化流程。
+LLMEra 是一个面向 Minecraft 1.21.1 / NeoForge 的机械动力（Create）附属模组。它添加智能网络方块，让大语言模型可以接入 Minecraft 自动化流程。
 
 ## 功能
 
@@ -28,6 +28,6 @@ Create:LLM Era 是一个面向 Minecraft 1.21.1 / NeoForge 的机械动力（Cre
 
 ## 版本信息
 
-- 模组名称：Create:LLM Era
+- 模组名称：LLMEra
 - 版本：1.0
 - 许可证：GNU GPLv3

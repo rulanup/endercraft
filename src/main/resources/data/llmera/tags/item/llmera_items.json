@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "llmera:intelligent_transmitter",
+    "llmera:tool_link_station",
+    "llmera:skill_board"
+  ]
+}
