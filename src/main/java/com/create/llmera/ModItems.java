@@ -1,5 +1,6 @@
 package com.create.llmera;
 
+import com.create.llmera.item.NetworkBindableBlockItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -13,8 +14,8 @@ public class ModItems {
             () -> new BlockItem(ModBlocks.INTELLIGENT_TRANSMITTER.get(), new Item.Properties().stacksTo(64)));
 
     public static final DeferredHolder<Item, Item> TOOL_LINK_STATION_ITEM = ITEMS.register("tool_link_station",
-            () -> new BlockItem(ModBlocks.TOOL_LINK_STATION.get(), new Item.Properties().stacksTo(64)));
+            () -> new NetworkBindableBlockItem(ModBlocks.TOOL_LINK_STATION.get(), new Item.Properties().stacksTo(64)));
 
     public static final DeferredHolder<Item, Item> SKILL_BOARD_ITEM = ITEMS.register("skill_board",
-            () -> new BlockItem(ModBlocks.SKILL_BOARD.get(), new Item.Properties().stacksTo(64)));
+            () -> new NetworkBindableBlockItem(ModBlocks.SKILL_BOARD.get(), new Item.Properties().stacksTo(64)));
 }

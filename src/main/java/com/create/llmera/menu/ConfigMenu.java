@@ -11,15 +11,22 @@ import net.minecraft.world.phys.Vec3;
 
 public class ConfigMenu extends AbstractContainerMenu {
     public final BlockPos pos;
+    public final boolean conversationMode;
 
     public ConfigMenu(int containerId, Inventory playerInv, BlockPos pos) {
+        this(containerId, playerInv, pos, false);
+    }
+
+    public ConfigMenu(int containerId, Inventory playerInv, BlockPos pos, boolean conversationMode) {
         super(ModMenuTypes.CONFIG_MENU.get(), containerId);
         this.pos = pos;
+        this.conversationMode = conversationMode;
     }
 
     public ConfigMenu(int containerId, Inventory playerInv, RegistryFriendlyByteBuf extraData) {
         super(ModMenuTypes.CONFIG_MENU.get(), containerId);
         this.pos = extraData.readBlockPos();
+        this.conversationMode = extraData.readableBytes() > 0 && extraData.readBoolean();
     }
 
     @Override

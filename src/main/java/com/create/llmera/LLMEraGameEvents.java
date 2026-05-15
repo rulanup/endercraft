@@ -42,6 +42,9 @@ public final class LLMEraGameEvents {
         if (event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
+        if (!event.getEntity().getOffhandItem().isEmpty()) {
+            return;
+        }
 
         Level level = event.getLevel();
         BlockPos clickedPos = event.getPos();
@@ -59,7 +62,7 @@ public final class LLMEraGameEvents {
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
         if (!level.isClientSide && event.getEntity() instanceof ServerPlayer serverPlayer) {
-            IntelligentTransmitterBlock.openConfigMenu(serverPlayer, transmitterPos.get());
+            IntelligentTransmitterBlock.openConfigMenu(serverPlayer, transmitterPos.get(), true);
         }
     }
 }

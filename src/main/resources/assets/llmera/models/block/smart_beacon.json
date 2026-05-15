@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "llmera:block/smart_beacon"
-  }
+  "parent": "llmera:block/intelligent_transmitter"
 }

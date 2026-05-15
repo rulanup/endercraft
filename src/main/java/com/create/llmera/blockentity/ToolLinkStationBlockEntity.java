@@ -2,6 +2,10 @@ package com.create.llmera.blockentity;
 
 import com.create.llmera.ModBlockEntityTypes;
 import com.create.llmera.util.NetworkBinding;
+import com.simibubi.create.content.kinetics.transmission.sequencer.Instruction;
+import com.simibubi.create.content.kinetics.transmission.sequencer.InstructionSpeedModifiers;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencedGearshiftBlockEntity;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,6 +21,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Vector;
 
 public class ToolLinkStationBlockEntity extends BlockEntity {
     private String toolName = "";
@@ -78,6 +84,43 @@ public class ToolLinkStationBlockEntity extends BlockEntity {
     }
 
     public String getLastResult() {
+        return lastResult;
+    }
+
+    public String applyProgramFromAi(int direction, int angle, int speed) {
+        return applyProgramFromAi("angle", angle, direction, speed);
+    }
+
+    public String applyProgramFromAi(String mode, int value, int direction, int speedMultiplier) {
+        return applyProgramFromAi(mode, value, direction, speedMultiplier, false);
+    }
+
+    public String applyProgramFromAi(String mode, int value, int direction, int speedMultiplier, boolean append) {
+        if (!"programmable".equals(getTargetKind())) {
+            lastResult = "目标方块不是可编程工具";
+            sync();
+            return lastResult;
+        }
+
+        toolType = "program";
+        rotationDirection = direction < 0 ? -1 : 1;
+        rotationSpeed = clamp(speedMultiplier, 1, 2);
+        lastResult = configureSequencedGearshift(mode, value, rotationDirection, rotationSpeed, append);
+        sync();
+        return lastResult;
+    }
+
+    public String setRedstoneSignalFromAi(int strength) {
+        if (!enabled) {
+            lastResult = "工具已禁用";
+            sync();
+            return lastResult;
+        }
+
+        pulseTicksRemaining = 0;
+        setRedstoneSignal(clamp(strength, 0, 15));
+        lastResult = "AI已设置红石信号：" + redstoneSignal;
+        sync();
         return lastResult;
     }
 
@@ -256,6 +299,96 @@ public class ToolLinkStationBlockEntity extends BlockEntity {
         return worldPosition.below();
     }
 
+    private String configureSequencedGearshift(String mode, int value, int direction, int speedMultiplier, boolean append) {
+        if (level == null) {
+            return "世界未加载";
+        }
+        BlockEntity targetEntity = level.getBlockEntity(getTargetPos());
+        if (!(targetEntity instanceof SequencedGearshiftBlockEntity gearshift)) {
+            rotationAngle = clamp(value, 1, 360);
+            return "目标不是机械动力序列齿轮箱，仅保存工具配置：方向=" + directionLabel(direction)
+                    + "，角度=" + rotationAngle + "，速度=" + speedLabel(direction, speedMultiplier);
+        }
+
+        SequencerInstructions instruction = sequencerInstruction(mode);
+        int clampedValue = clampInstructionValue(instruction, value);
+        Vector<Instruction> instructions = gearshift.getInstructions();
+        gearshift.run(-1);
+        if (append) {
+            removeTrailingBoundary(instructions);
+        } else {
+            instructions.clear();
+        }
+
+        int slot = instructions.size();
+        if (slot >= 5) {
+            return "齿轮箱程序已满，最多写入 5 步";
+        }
+
+        if (instruction == SequencerInstructions.AWAIT || instruction == SequencerInstructions.END) {
+            instructions.add(new Instruction(instruction));
+        } else if (instruction.hasSpeedParameter) {
+            instructions.add(new Instruction(instruction, speedModifier(direction, speedMultiplier), clampedValue));
+        } else {
+            instructions.add(new Instruction(instruction, clampedValue));
+        }
+        if (instruction != SequencerInstructions.END && instructions.size() < 5) {
+            instructions.add(new Instruction(SequencerInstructions.END));
+        }
+
+        gearshift.setChanged();
+        gearshift.sendData();
+
+        if (instruction == SequencerInstructions.TURN_ANGLE) {
+            rotationAngle = clampedValue;
+        }
+        return "AI已写入齿轮箱配置：槽位=" + slot
+                + "，步骤=" + instruction.name()
+                + "，数值=" + clampedValue
+                + "，速度=" + speedLabel(direction, speedMultiplier);
+    }
+
+    private static void removeTrailingBoundary(Vector<Instruction> instructions) {
+        if (!instructions.isEmpty()) {
+            instructions.remove(instructions.size() - 1);
+        }
+    }
+
+    private static SequencerInstructions sequencerInstruction(String mode) {
+        String normalized = mode == null ? "" : mode.trim().toLowerCase();
+        return switch (normalized) {
+            case "distance", "piston", "pulley", "gantry", "move", "移动", "距离" -> SequencerInstructions.TURN_DISTANCE;
+            case "delay", "wait_ticks", "time", "时间延迟", "延迟" -> SequencerInstructions.DELAY;
+            case "await", "pulse", "redstone", "等待脉冲", "等待新的红石脉冲" -> SequencerInstructions.AWAIT;
+            case "end", "结束" -> SequencerInstructions.END;
+            default -> SequencerInstructions.TURN_ANGLE;
+        };
+    }
+
+    private static int clampInstructionValue(SequencerInstructions instruction, int value) {
+        return switch (instruction) {
+            case TURN_ANGLE -> clamp(value, 1, 360);
+            case TURN_DISTANCE -> clamp(value, 1, 128);
+            case DELAY -> clamp(value, 1, 600);
+            case AWAIT, END -> 1;
+        };
+    }
+
+    private static InstructionSpeedModifiers speedModifier(int direction, int speedMultiplier) {
+        if (direction < 0) {
+            return speedMultiplier >= 2 ? InstructionSpeedModifiers.BACK_FAST : InstructionSpeedModifiers.BACK;
+        }
+        return speedMultiplier >= 2 ? InstructionSpeedModifiers.FORWARD_FAST : InstructionSpeedModifiers.FORWARD;
+    }
+
+    private static String directionLabel(int direction) {
+        return direction < 0 ? "反向" : "正向";
+    }
+
+    private static String speedLabel(int direction, int speedMultiplier) {
+        return directionLabel(direction) + (speedMultiplier >= 2 ? "两倍速" : "一倍速");
+    }
+
     private void startPulse(int ticks) {
         pulseTicksRemaining = ticks;
         setRedstoneSignal(15);
@@ -271,11 +404,13 @@ public class ToolLinkStationBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide) {
             level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
             level.updateNeighborsAt(worldPosition.below(), getBlockState().getBlock());
+            level.neighborChanged(worldPosition.below(), getBlockState().getBlock(), worldPosition);
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
-    private String exportTargetInventory() {
+    public String exportTargetInventory() {
         if (level == null) {
             return "世界未加载";
         }

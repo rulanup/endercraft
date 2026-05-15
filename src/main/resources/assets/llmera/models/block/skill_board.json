@@ -1,6 +1,7 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
+    "particle": "llmera:block/skill_board",
     "all": "llmera:block/skill_board"
   }
 }

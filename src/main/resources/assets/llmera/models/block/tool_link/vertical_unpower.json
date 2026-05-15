@@ -1,5 +1,6 @@
 {	"credit": "Made with Blockbench",
 	"textures": {
+		"particle": "llmera:block/link_base_unpowered",
 		"0": "llmera:block/link_base_unpowered",
 		"1": "llmera:block/link_details"
 	},

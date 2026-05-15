@@ -1,7 +1,8 @@
 {	"credit": "Made with Blockbench",
 	"parent": "minecraft:block/block",
 	"textures": {
-		"0": "llmera:block/smart_ticker"
+		"particle": "llmera:block/intelligent_transmitter",
+		"0": "llmera:block/intelligent_transmitter"
 	},
 	"elements": [
 		{

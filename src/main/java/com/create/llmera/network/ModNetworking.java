@@ -43,6 +43,16 @@ public final class ModNetworking {
         CompoundTag data = payload.data();
         if (blockEntity instanceof IntelligentTransmitterBlockEntity transmitter) {
             transmitter.applyClientData(data);
+            if (data.getBoolean("FetchModels")) {
+                serverPlayer.sendSystemMessage(Component.literal(transmitter.fetchModelList()));
+            }
+            if (data.contains("ChatPrompt")) {
+                serverPlayer.sendSystemMessage(Component.literal(transmitter.sendConversation(data.getString("ChatPrompt"))));
+            }
+            if (data.getBoolean("ClearConversation")) {
+                transmitter.clearConversation();
+                serverPlayer.sendSystemMessage(Component.translatable("screen.llmera.status.chat_cleared"));
+            }
         } else if (blockEntity instanceof ToolLinkStationBlockEntity station) {
             station.applyClientData(data);
             if (data.getBoolean("TriggerTool")) {

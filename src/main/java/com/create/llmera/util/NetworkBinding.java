@@ -36,6 +36,11 @@ public final class NetworkBinding {
         CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> writeNetworkPos(tag, networkPos));
     }
 
+    public static void clearStackNetwork(ItemStack stack) {
+        stack.remove(DataComponents.BLOCK_ENTITY_DATA);
+        stack.remove(DataComponents.CUSTOM_DATA);
+    }
+
     @Nullable
     public static BlockPos readNetworkPos(ItemStack stack) {
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);

@@ -14,11 +14,21 @@ public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, LLMEraMod.MODID);
 
     public static final DeferredHolder<Block, Block> INTELLIGENT_TRANSMITTER = BLOCKS.register("intelligent_transmitter",
-            () -> new IntelligentTransmitterBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(3.0f).requiresCorrectToolForDrops()));
+            () -> new IntelligentTransmitterBlock(machineProperties()));
 
     public static final DeferredHolder<Block, Block> TOOL_LINK_STATION = BLOCKS.register("tool_link_station",
-            () -> new ToolLinkStationBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(3.0f).requiresCorrectToolForDrops()));
+            () -> new ToolLinkStationBlock(machineProperties()));
 
     public static final DeferredHolder<Block, Block> SKILL_BOARD = BLOCKS.register("skill_board",
-            () -> new SkillBoardBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(3.0f).requiresCorrectToolForDrops()));
+            () -> new SkillBoardBlock(machineProperties()));
+
+    private static BlockBehaviour.Properties machineProperties() {
+        return BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                .strength(3.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion()
+                .isRedstoneConductor((state, level, pos) -> false)
+                .isSuffocating((state, level, pos) -> false)
+                .isViewBlocking((state, level, pos) -> false);
+    }
 }
