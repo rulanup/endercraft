@@ -245,8 +245,9 @@ public class IntelligentTransmitterBlockEntity extends BlockEntity {
         String promptCopy = lastConversationInput;
         BlockPos copyPos = worldPosition.immutable();
         ServerLevel copyLevel = (ServerLevel) level;
+        String networkContext = buildNetworkContext();
         Thread.startVirtualThread(() -> {
-            String result = requestChatCompletion(promptCopy);
+            String result = requestChatCompletionWithContext(promptCopy, networkContext);
             copyLevel.getServer().execute(() -> {
                 if (copyLevel.getBlockEntity(copyPos) instanceof IntelligentTransmitterBlockEntity be) {
                     be.lastConversationResponse = result;
@@ -337,6 +338,10 @@ public class IntelligentTransmitterBlockEntity extends BlockEntity {
     }
 
     private String requestChatCompletion(String prompt) {
+        return requestChatCompletionWithContext(prompt, buildNetworkContext());
+    }
+
+    private String requestChatCompletionWithContext(String prompt, String networkContext) {
         if (modelUrl.isBlank()) {
             return "请先填写模型地址";
         }
@@ -344,7 +349,6 @@ public class IntelligentTransmitterBlockEntity extends BlockEntity {
             return "请先填写模型名称";
         }
 
-        String networkContext = buildNetworkContext();
         String body = "{"
                 + "\"model\":\"" + escapeJson(modelName) + "\","
                 + "\"messages\":["
